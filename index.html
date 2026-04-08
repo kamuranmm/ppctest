@@ -618,7 +618,7 @@ function downloadPDF() {
 
   // Build HTML for PDF
   const html = `
-    <div style="font-family:Arial,sans-serif;padding:20px;max-width:170mm;color:#1a2744">
+    <div style="font-family:Arial,sans-serif;padding:20px 24px;width:794px;box-sizing:border-box;color:#1a2744">
       <div style="background:#1a2744;padding:14px 16px;border-radius:6px;margin-bottom:16px">
         <div style="font-size:15px;font-weight:bold;color:white">Pozitiv Psixologiya Mərkəzi</div>
         <div style="font-size:10px;color:#2ec4b6;margin-top:3px">Diaqnostika Blanki</div>
@@ -656,7 +656,7 @@ function downloadPDF() {
     </div>`;
 
   const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;background:white';
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:white;padding:0;margin:0';
   container.innerHTML = html;
   document.body.appendChild(container);
 
