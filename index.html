@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPC Diaqnostika Sistemi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--navy:#1a2744;--teal:#2ec4b6;--teal-l:#3de0d4;--cream:#f8f5f0;--cream2:#ede9e2;--text:#1a2744;--muted:#6b7a99;--white:#fff;--danger:#e05c5c;--success:#2eb87a;--border:#d8d2c8;--sh:0 4px 24px rgba(26,39,68,.10);--sh-lg:0 12px 48px rgba(26,39,68,.18)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+.screen{display:none;min-height:100vh}.screen.active{display:flex;flex-direction:column}
+
+/* HOME */
+#home{background:var(--navy);align-items:center;justify-content:center;position:relative;overflow:hidden}
+#home::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(46,196,182,.15) 0%,transparent 70%);top:-100px;right:-100px}
+#home::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(46,196,182,.08) 0%,transparent 70%);bottom:-80px;left:-80px}
+.home-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:48px;padding:60px 24px}
+.logo-block{text-align:center}
+.brand-big{font-family:'DM Serif Display',serif;font-size:2.4rem;color:var(--white);letter-spacing:-.02em;line-height:1.1}
+.brand-big span{color:var(--teal)}
+.tagline{margin-top:10px;font-size:.9rem;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase}
+.home-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.home-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:36px 32px;width:240px;cursor:pointer;transition:all .3s;text-align:center;backdrop-filter:blur(10px)}
+.home-card:hover{background:rgba(46,196,182,.12);border-color:var(--teal);transform:translateY(-4px);box-shadow:0 20px 60px rgba(46,196,182,.2)}
+.home-card .icon{font-size:2.4rem;margin-bottom:16px;display:block}
+.home-card h3{font-size:1.1rem;font-weight:600;color:var(--white);margin-bottom:8px}
+.home-card p{font-size:.8rem;color:rgba(255,255,255,.45);line-height:1.5}
+
+/* TOPBAR */
+.topbar{background:var(--navy);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar .brand{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--white)}
+.topbar .brand span{color:var(--teal)}
+.role-badge{font-size:.75rem;background:rgba(46,196,182,.15);color:var(--teal);border:1px solid rgba(46,196,182,.3);padding:5px 14px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase;font-weight:500}
+.back-btn{background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:.85rem;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:color .2s}
+.back-btn:hover{color:var(--white)}
+
+/* LOGIN */
+#admin-login,#parent-login{background:var(--navy);align-items:center;justify-content:center}
+.login-card{background:var(--white);border-radius:24px;padding:48px 40px;width:380px;box-shadow:var(--sh-lg)}
+.login-card h2{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--navy);margin-bottom:6px}
+.login-card .subtitle{font-size:.85rem;color:var(--muted);margin-bottom:32px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.form-group input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--text);background:var(--cream);transition:border-color .2s,box-shadow .2s;outline:none}
+.form-group input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(46,196,182,.12);background:var(--white)}
+.form-row{display:flex;gap:16px;flex-wrap:wrap}
+.form-row .form-group{flex:1;min-width:150px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--teal);color:var(--white)}
+.btn-primary:hover{background:var(--teal-l);transform:translateY(-1px);box-shadow:0 6px 20px rgba(46,196,182,.35)}
+.btn-secondary{background:var(--cream2);color:var(--navy)}
+.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:#fff0f0;color:var(--danger);border:1.5px solid #f7c8c8}
+.btn-danger:hover{background:#fde0e0}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:8px 16px;font-size:.82rem}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.error-msg{background:#fff0f0;border:1px solid #f7c8c8;color:var(--danger);padding:10px 14px;border-radius:8px;font-size:.85rem;margin-top:12px;display:none}
+
+/* ADMIN */
+#admin-panel{background:var(--cream)}
+.admin-body{flex:1;padding:32px;max-width:1100px;margin:0 auto;width:100%}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--navy);margin-bottom:4px}
+.section-sub{font-size:.85rem;color:var(--muted);margin-bottom:28px}
+.tabs{display:flex;gap:4px;background:var(--cream2);border-radius:12px;padding:4px;margin-bottom:28px;width:fit-content}
+.tab-btn{padding:9px 22px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;color:var(--muted);cursor:pointer;border-radius:9px;transition:all .2s}
+.tab-btn.active{background:var(--white);color:var(--navy);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* NEW RECORD */
+.new-record-card{background:var(--white);border-radius:16px;box-shadow:var(--sh);padding:28px;margin-bottom:28px}
+.new-record-card h3{font-size:1rem;font-weight:600;color:var(--navy);margin-bottom:20px}
+.code-display{background:var(--navy);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:16px;flex-wrap:wrap}
+.code-val{font-family:monospace;font-size:2rem;font-weight:700;color:var(--teal);letter-spacing:.2em}
+.code-label{font-size:.78rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+
+/* ══ ACCORDION RECORDS ══ */
+#search-box{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;background:var(--white);margin-bottom:16px}
+#search-box:focus{border-color:var(--teal)}
+
+.acc-card{background:var(--white);border-radius:14px;box-shadow:var(--sh);margin-bottom:10px;overflow:hidden}
+
+/* collapsed header row */
+.acc-head{display:flex;align-items:center;gap:0;cursor:pointer;transition:background .15s;padding:0}
+.acc-head:hover{background:var(--cream)}
+.acc-col{padding:14px 16px;font-size:.88rem;display:flex;align-items:center}
+.acc-col.num{width:44px;justify-content:center;font-weight:700;color:var(--muted);font-size:.8rem;flex-shrink:0}
+.acc-col.name{flex:2;font-weight:600;color:var(--navy);min-width:0}
+.acc-col.age{width:70px;color:var(--muted);font-size:.82rem;flex-shrink:0}
+.acc-col.date{width:110px;color:var(--muted);font-size:.82rem;flex-shrink:0}
+.acc-col.expert{flex:1;color:var(--muted);font-size:.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-col.pin{width:120px;flex-shrink:0}
+.acc-col.actions{width:80px;justify-content:flex-end;flex-shrink:0}
+.acc-col.chevron-col{width:36px;justify-content:center;color:var(--muted);font-size:.7rem;flex-shrink:0}
+.acc-chevron{transition:transform .2s}
+.acc-head.open .acc-chevron{transform:rotate(180deg)}
+
+.pin-badge{display:inline-flex;align-items:center;gap:5px;background:var(--navy);color:var(--white);padding:5px 11px;border-radius:7px;font-size:.78rem;font-weight:600;letter-spacing:.1em;font-family:monospace}
+.pin-badge .plabel{font-family:'DM Sans',sans-serif;font-weight:400;font-size:.7rem;color:rgba(255,255,255,.5);letter-spacing:0}
+
+/* table header row */
+.acc-table-header{display:flex;align-items:center;background:var(--cream2);border-top:1px solid var(--border);padding:0}
+.acc-table-header .acc-col{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 16px}
+
+/* expanded body */
+.acc-body{display:none;border-top:1px solid var(--cream2)}
+.acc-body.open{display:block}
+
+/* test rows inside expanded */
+.result-table{width:100%;border-collapse:collapse}
+.result-table td{padding:10px 16px;font-size:.87rem;border-bottom:1px solid var(--cream2);vertical-align:middle}
+.result-table tr:last-child td{border-bottom:none}
+.result-table td.tname{font-weight:500;color:var(--navy);width:42%}
+.result-table td textarea{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:var(--text);background:var(--cream);transition:border-color .2s;outline:none;resize:vertical;min-height:38px}
+.result-table td textarea:focus{border-color:var(--teal);background:var(--white)}
+.save-status{font-size:.76rem;color:var(--muted);display:flex;align-items:center;gap:5px;padding:10px 16px;border-top:1px solid var(--cream2)}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0}
+
+.no-results{text-align:center;padding:40px 20px;color:var(--muted);font-size:.9rem}
+.no-results span{font-size:2rem;display:block;margin-bottom:8px}
+
+/* PARENT */
+#parent-panel{background:var(--cream)}
+.parent-body{flex:1;padding:32px;max-width:800px;margin:0 auto;width:100%}
+.child-card{background:var(--navy);border-radius:20px;padding:28px 32px;margin-bottom:28px;color:var(--white);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.child-avatar{width:60px;height:60px;border-radius:50%;background:rgba(46,196,182,.2);border:2px solid rgba(46,196,182,.4);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
+.child-info h2{font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:4px}
+.child-info .cage{font-size:.85rem;color:rgba(255,255,255,.5)}
+
+/* PARENT TEST CARDS */
+.test-result-card{background:var(--white);border-radius:14px;box-shadow:var(--sh);margin-bottom:10px;overflow:hidden}
+.trh{display:flex;align-items:center;gap:14px;padding:15px 20px;cursor:pointer;user-select:none;transition:background .15s}
+.trh:hover{background:var(--cream)}
+.test-num{width:30px;height:30px;border-radius:8px;background:var(--navy);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0}
+.test-title-p{font-weight:600;font-size:.88rem;color:var(--navy);flex:1}
+.test-status{font-size:.75rem;padding:3px 10px;border-radius:20px;font-weight:500;flex-shrink:0}
+.test-status.filled{background:rgba(46,196,182,.12);color:var(--teal)}
+.test-status.empty{background:var(--cream2);color:var(--muted)}
+.chevron-p{font-size:.7rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.trh.open .chevron-p{transform:rotate(180deg)}
+.trb{display:none;padding:14px 20px;border-top:1px solid var(--cream2)}
+.trb.open{display:block}
+.rval-block{background:var(--cream);border-radius:10px;padding:12px 16px;font-size:.88rem;color:var(--text);line-height:1.7;white-space:pre-wrap}
+.rval-empty{color:var(--muted);font-style:italic;font-size:.85rem}
+.pdf-wrap{margin-top:24px;text-align:center}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(26,39,68,.7);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.hidden{display:none}
+.spinner{width:44px;height:44px;border:4px solid rgba(46,196,182,.3);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite}
+.loading-overlay p{color:var(--white);font-size:.9rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--white);padding:13px 22px;border-radius:12px;font-size:.88rem;font-weight:500;box-shadow:var(--sh-lg);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9999}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:4px solid var(--success)}.toast.error{border-left:4px solid var(--danger)}
+
+@media(max-width:700px){
+  .acc-col.date,.acc-col.expert{display:none}
+  .acc-col.age{display:none}
+  .admin-body,.parent-body{padding:16px}
+  .topbar{padding:14px 16px}
+  .home-card{width:100%}
+  .form-row{flex-direction:column}
+  .login-card{width:92%;padding:32px 20px}
+}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay hidden" id="loading"><div class="spinner"></div><p>Yüklənir...</p></div>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="home-inner">
+    <div class="logo-block">
+      <div class="brand-big">Pozitiv Psixologiya<span> Mərkəzi</span></div>
+      <div class="tagline">Diaqnostika Sistemi</div>
+    </div>
+    <div class="home-cards">
+      <div class="home-card" onclick="showScreen('admin-login')"><span class="icon">🔐</span><h3>Admin Panel</h3><p>Uşaq qeydiyyatı, test nəticələrinin daxil edilməsi</p></div>
+      <div class="home-card" onclick="showScreen('parent-login')"><span class="icon">👨‍👩‍👧</span><h3>Valideyn Portalı</h3><p>PIN kodu ilə uşağınızın test nəticələrinə baxın</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="admin-login" class="screen">
+  <div class="login-card" style="margin:auto">
+    <h2>Admin Girişi</h2><p class="subtitle">Yalnız mütəxəssislər üçün</p>
+    <div class="form-group"><label>İstifadəçi adı</label><input type="text" id="admin-user" placeholder="admin"></div>
+    <div class="form-group"><label>Şifrə</label><input type="password" id="admin-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')adminLogin()"></div>
+    <button class="btn btn-primary btn-full" onclick="adminLogin()">Daxil ol</button>
+    <div class="error-msg" id="admin-err">İstifadəçi adı və ya şifrə yanlışdır.</div>
+    <div style="margin-top:16px;text-align:center"><button class="back-btn" style="color:var(--muted);margin:auto" onclick="showScreen('home')">← Geri</button></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" class="screen">
+  <div class="topbar">
+    <div class="brand">PPC <span>Admin</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="role-badge">Mütəxəssis</span><button class="back-btn" onclick="showScreen('home')">Çıxış</button></div>
+  </div>
+  <div class="admin-body">
+    <div class="tabs">
+      <button class="tab-btn active" id="tbtn-new" onclick="switchTab('tab-new',this)">+ Yeni Qeydiyyat</button>
+      <button class="tab-btn" id="tbtn-rec" onclick="switchTab('tab-records',this)">Qeydiyyatlar</button>
+    </div>
+
+    <div id="tab-new" class="tab-content active">
+      <p class="section-title">Yeni Uşaq Qeydiyyatı</p>
+      <p class="section-sub">Məlumatları daxil edin — sistem avtomatik PIN kodu yaradacaq</p>
+      <div class="new-record-card">
+        <h3>📋 Uşaq Məlumatları</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Adı</label><input type="text" id="new-name" placeholder="Ad"></div>
+          <div class="form-group"><label>Soyadı</label><input type="text" id="new-surname" placeholder="Soyad"></div>
+          <div class="form-group"><label>Yaş</label><input type="number" id="new-age" placeholder="Yaş" min="1" max="18"></div>
+          <div class="form-group"><label>Doğum tarixi</label><input type="date" id="new-dob"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Mütəxəssis</label><input type="text" id="new-expert" placeholder="Ad Soyad"></div>
+          <div class="form-group"><label>Diaqnostika tarixi</label><input type="date" id="new-date"></div>
+        </div>
+        <button class="btn btn-primary" id="create-btn" onclick="createRecord()">✦ Qeydiyyat yarat və PIN al</button>
+        <div id="code-result" style="display:none">
+          <div class="code-display">
+            <div><div class="code-label">Valideyn PIN kodu</div><div class="code-val" id="generated-code">------</div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="copyCode()">📋 Kopyala</button>
+              <button class="btn btn-primary btn-sm" onclick="goToRecord()">Nəticəni doldur →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-records" class="tab-content">
+      <p class="section-title">Bütün Qeydiyyatlar</p>
+      <p class="section-sub">Sətrin üzərinə basın — test nəticələrini daxil edin</p>
+      <input type="text" id="search-box" placeholder="🔍  Ad, soyad və ya PIN ilə axtar..." oninput="filterRecords()">
+      <!-- column headers -->
+      <div class="acc-card" style="box-shadow:none;background:transparent;margin-bottom:4px">
+        <div class="acc-table-header" style="border-radius:10px;border:1px solid var(--border)">
+          <div class="acc-col num">#</div>
+          <div class="acc-col name">Ad Soyad</div>
+          <div class="acc-col age">Yaş</div>
+          <div class="acc-col date">Tarix</div>
+          <div class="acc-col expert">Mütəxəssis</div>
+          <div class="acc-col pin">PIN</div>
+          <div class="acc-col actions"></div>
+          <div class="acc-col chevron-col"></div>
+        </div>
+      </div>
+      <div id="records-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PARENT LOGIN -->
+<div id="parent-login" class="screen">
+  <div class="login-card" style="margin:auto">
+    <h2>Valideyn Girişi</h2><p class="subtitle">Sizə verilən PIN kodu daxil edin</p>
+    <div class="form-group">
+      <label>PIN Kodu</label>
+      <input type="text" id="parent-pin" placeholder="000000" maxlength="6"
+        style="font-size:1.6rem;font-family:monospace;letter-spacing:.25em;text-align:center;font-weight:700"
+        oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')parentLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="parentLogin()">Daxil ol</button>
+    <div class="error-msg" id="parent-err">PIN kodu tapılmadı. Yenidən cəhd edin.</div>
+    <div style="margin-top:16px;text-align:center"><button class="back-btn" style="color:var(--muted);margin:auto" onclick="showScreen('home')">← Geri</button></div>
+  </div>
+</div>
+
+<!-- PARENT PANEL -->
+<div id="parent-panel" class="screen">
+  <div class="topbar">
+    <div class="brand">PPC <span>Portal</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="role-badge">Valideyn</span><button class="back-btn" onclick="showScreen('home')">Çıxış</button></div>
+  </div>
+  <div class="parent-body">
+    <div class="child-card">
+      <div class="child-avatar">👤</div>
+      <div class="child-info"><h2 id="p-name">—</h2><div class="cage" id="p-meta">—</div></div>
+    </div>
+    <p class="section-title" style="margin-bottom:4px">Test Nəticələri</p>
+    <p class="section-sub" style="margin-bottom:20px">Hər testin üzərinə klikləyərək nəticəni görə bilərsiniz</p>
+    <div id="parent-results"></div>
+    <div class="pdf-wrap" id="pdf-wrap" style="display:none">
+      <button class="btn btn-primary" onclick="downloadPDF()">⬇&nbsp; PDF olaraq yüklə</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyBdbVMrgxGH9FHrILGcsLLQwtKcmZzKdcI",
+  authDomain: "diaqnostika-testi.firebaseapp.com",
+  databaseURL: "https://diaqnostika-testi-default-rtdb.firebaseio.com",
+  projectId: "diaqnostika-testi",
+  storageBucket: "diaqnostika-testi.firebasestorage.app",
+  messagingSenderId: "283183043793",
+  appId: "1:283183043793:web:54a5fc434fa7ff72bea1f0"
+});
+let db;
+try {
+  db = firebase.database();
+  console.log('Firebase OK');
+} catch(e) {
+  console.error('Firebase xeta:', e);
+  document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif"><h2 style="color:red">Firebase yüklənmədi</h2><p>' + e.message + '</p></div>';
+}
+
+const ADMIN = { user:'admin', pass:'ppc2024' };
+const TESTS = [
+  'Porteus_Labirint_Testi',
+  'Frankfurter_Diqqet_Testi',
+  'Cattell_CFIT2',
+  'Benton_Vizual_Yadddas_Testi',
+  'D2_Diqqet_Testi',
+  'Good_Enough',
+  'Moxo',
+  'Cattell_Scale3_FormA',
+  'M_CHAT',
+  'Denver_II_Inkisaf_Testi',
+  'Gesell_Inkisaf_Fiqurlari'
+];
+const TESTS_DISPLAY = [
+  'Porteus Labirint Testi',
+  'Frankfurter Diqqət Testi',
+  'Cattell Culture Fair Intelligence Test (CFIT 2)',
+  'Benton Vizual Yaddaş Testi',
+  'D2 Diqqət Testi',
+  'Good Enough',
+  'Moxo',
+  'Cattell Culture Fair Intelligence Test – Scale 3, Form A',
+  'M-CHAT',
+  'Denver II İnkişaf Testi',
+  'Gesell İnkişaf Fiqurları Testi'
+];
+
+let allRecords = [];
+let currentRec = null;
+let lastId = null;
+let currentParentPin = null;
+
+// ── SCREENS ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'admin-panel') startAdminListener();
+}
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── ADMIN AUTH ──
+function adminLogin() {
+  const u = document.getElementById('admin-user').value.trim();
+  const p = document.getElementById('admin-pass').value;
+  const err = document.getElementById('admin-err');
+  if (u === ADMIN.user && p === ADMIN.pass) { err.style.display='none'; showScreen('admin-panel'); }
+  else { err.style.display='block'; shake(document.querySelector('#admin-login .login-card')); }
+}
+
+// ── PARENT AUTH ──
+async function parentLogin() {
+  const pin = document.getElementById('parent-pin').value.trim();
+  const err = document.getElementById('parent-err');
+  if (!pin) return;
+  showLoading(true);
+  try {
+    const snap = await db.ref('records').once('value');
+    if (snap.exists()) {
+      const rec = Object.values(snap.val()).find(r => r.pin === pin);
+      if (rec) {
+        err.style.display = 'none';
+        currentParentPin = pin;
+        currentRec = rec;
+        showScreen('parent-panel');
+        renderParentView(rec);
+        // Real-time listener
+        db.ref('records').on('value', snap2 => {
+          if (!snap2.exists()) return;
+          const updated = Object.values(snap2.val()).find(r => r.pin === pin);
+          if (updated) { currentRec = updated; renderParentView(updated); }
+        });
+      } else {
+        err.style.display = 'block';
+        shake(document.querySelector('#parent-login .login-card'));
+      }
+    } else { err.style.display = 'block'; }
+  } catch(e) { showToast('Xəta: ' + e.message, 'error'); }
+  finally { showLoading(false); }
+}
+
+// ── ADMIN LISTENER ──
+function startAdminListener() {
+  db.ref('records').on('value', snap => {
+    allRecords = snap.exists()
+      ? Object.values(snap.val()).sort((a,b) => Number(b.id) - Number(a.id))
+      : [];
+    filterRecords();
+  });
+}
+
+// ── CREATE ──
+async function createRecord() {
+  const name = document.getElementById('new-name').value.trim();
+  const surname = document.getElementById('new-surname').value.trim();
+  if (!name || !surname) { showToast('Ad və soyad mütləqdir!', 'error'); return; }
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true; showLoading(true);
+  try {
+    const snap = await db.ref('records').once('value');
+    const existing = snap.exists() ? Object.values(snap.val()).map(r => r.pin) : [];
+    const pin = genPin(existing);
+    const results = {};
+    TESTS.forEach(t => results[t] = '');
+    const id = Date.now().toString();
+    await db.ref('records/' + id).set({
+      id, pin, name, surname,
+      age: document.getElementById('new-age').value || '',
+      dob: document.getElementById('new-dob').value || '',
+      expert: document.getElementById('new-expert').value.trim(),
+      date: document.getElementById('new-date').value || new Date().toISOString().split('T')[0],
+      results
+    });
+    lastId = id;
+    document.getElementById('generated-code').textContent = pin;
+    document.getElementById('code-result').style.display = 'block';
+    showToast('Qeydiyyat yaradıldı! PIN: ' + pin, 'success');
+    ['new-name','new-surname','new-age','new-dob','new-expert'].forEach(i => document.getElementById(i).value = '');
+  } catch(e) { showToast('Xəta: ' + e.message, 'error'); }
+  finally { showLoading(false); btn.disabled = false; }
+}
+
+function genPin(existing) {
+  let p;
+  do { p = String(Math.floor(100000 + Math.random() * 900000)); }
+  while (existing.includes(p));
+  return p;
+}
+function copyCode() {
+  navigator.clipboard.writeText(document.getElementById('generated-code').textContent)
+    .then(() => showToast('PIN kopyalandı!', 'success'));
+}
+function goToRecord() {
+  switchTab('tab-records', document.getElementById('tbtn-rec'));
+  document.getElementById('tbtn-new').classList.remove('active');
+  setTimeout(() => {
+    const el = document.getElementById('rec-' + lastId);
+    if (el) {
+      el.scrollIntoView({ behavior:'smooth', block:'start' });
+      // auto-open
+      const head = el.querySelector('.acc-head');
+      if (head && !head.classList.contains('open')) toggleAcc(head);
+    }
+  }, 400);
+}
+
+// ── FILTER & RENDER RECORDS ──
+function filterRecords() {
+  const q = (document.getElementById('search-box')?.value || '').toLowerCase();
+  const filtered = q
+    ? allRecords.filter(r => (r.name+' '+r.surname).toLowerCase().includes(q) || r.pin.includes(q))
+    : allRecords;
+  renderRecords(filtered);
+}
+
+function renderRecords(recs) {
+  const list = document.getElementById('records-list');
+  if (!list) return;
+  if (!recs.length) {
+    list.innerHTML = '<div class="no-results"><span>📭</span>Heç bir qeydiyyat tapılmadı</div>';
+    return;
+  }
+  list.innerHTML = recs.map((rec, idx) => `
+    <div class="acc-card" id="rec-${rec.id}">
+      <!-- COLLAPSED ROW -->
+      <div class="acc-head" onclick="toggleAcc(this)">
+        <div class="acc-col num">${idx+1}</div>
+        <div class="acc-col name">${rec.name} ${rec.surname}</div>
+        <div class="acc-col age">${rec.age||'—'}</div>
+        <div class="acc-col date">${rec.date||'—'}</div>
+        <div class="acc-col expert">${rec.expert||'—'}</div>
+        <div class="acc-col pin"><div class="pin-badge"><span class="plabel">PIN&nbsp;</span>${rec.pin}</div></div>
+        <div class="acc-col actions">
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteRecord('${rec.id}')">🗑</button>
+        </div>
+        <div class="acc-col chevron-col"><span class="acc-chevron">▼</span></div>
+      </div>
+      <!-- EXPANDED BODY -->
+      <div class="acc-body">
+        <table class="result-table">
+          <thead>
+            <tr style="background:var(--cream)">
+              <td style="padding:9px 16px;font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);width:42%;border-bottom:1px solid var(--border)">Test adı</td>
+              <td style="padding:9px 16px;font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border)">Nəticə / Qeyd</td>
+            </tr>
+          </thead>
+          <tbody>
+            ${TESTS.map((t,i) => `<tr>
+              <td class="tname">${i+1}. ${TESTS_DISPLAY[i]}</td>
+              <td><textarea id="ta-${rec.id}-${i}" rows="2" placeholder="Nəticəni daxil edin...">${esc(rec.results && rec.results[t] || '')}</textarea></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        <div style="padding:14px 16px;border-top:1px solid var(--cream2);display:flex;align-items:center;gap:12px">
+          <button class="btn btn-primary btn-sm" onclick="saveRecord('${rec.id}')">💾 Saxla</button>
+          <span id="save-msg-${rec.id}" style="font-size:.78rem;color:var(--success);display:none">✓ Saxlanıldı</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAcc(head) {
+  head.classList.toggle('open');
+  head.nextElementSibling.classList.toggle('open');
+}
+
+// ── SAVE RECORD (manual) ──
+async function saveRecord(id) {
+  const results = {};
+  TESTS.forEach((t, i) => {
+    const ta = document.getElementById('ta-' + id + '-' + i);
+    if (ta) results[t] = ta.value;
+  });
+  try {
+    await db.ref('records/' + id + '/results').set(results);
+    const msg = document.getElementById('save-msg-' + id);
+    if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+    showToast('Saxlanıldı ✓', 'success');
+  } catch(e) { showToast('Xəta: ' + e.message, 'error'); }
+}
+
+async function deleteRecord(id) {
+  if (!confirm('Bu qeydiyyatı silmək istədiyinizə əminsiniz?')) return;
+  try { await db.ref('records/' + id).remove(); showToast('Silindi', 'error'); }
+  catch(e) { showToast('Xəta: ' + e.message, 'error'); }
+}
+
+// ── PARENT VIEW (real-time, always show results) ──
+function renderParentView(rec) {
+  document.getElementById('p-name').textContent = rec.name + ' ' + rec.surname;
+  document.getElementById('p-meta').textContent =
+    'Yaş: '+(rec.age||'—')+'  |  Diaqnostika tarixi: '+(rec.date||'—')+
+    (rec.expert ? '  |  Mütəxəssis: '+rec.expert : '');
+
+  const container = document.getElementById('parent-results');
+  const pdfWrap = document.getElementById('pdf-wrap');
+  const hasAny = rec.results && TESTS.some(t => rec.results[t] && rec.results[t].trim());
+  pdfWrap.style.display = hasAny ? 'block' : 'none';
+
+  const filledTests = TESTS.map((t,i) => ({t, i, val: (rec.results && rec.results[t]) || ''}))
+    .filter(x => x.val.trim().length > 0);
+
+  if (!filledTests.length) {
+    container.innerHTML = `<div style="background:var(--white);border-radius:14px;box-shadow:var(--sh);padding:40px;text-align:center;color:var(--muted);font-size:.9rem;">
+      Hələ heç bir test nəticəsi daxil edilməyib
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filledTests.map(({t, i, val}) => `
+    <div class="test-result-card">
+      <div class="trh" onclick="toggleTest(this)">
+        <div class="test-num">${i+1}</div>
+        <div class="test-title-p">${TESTS_DISPLAY[i]}</div>
+        <span class="test-status filled">Daxil edilib</span>
+        <span class="chevron-p">▼</span>
+      </div>
+      <div class="trb">
+        <div class="rval-block">${esc(val)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleTest(h) { h.classList.toggle('open'); h.nextElementSibling.classList.toggle('open'); }
+
+// ── PDF ──
+// Azerbaijani char fix for jsPDF (helvetica does not support ə,ş,ğ etc)
+function azFix(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/ə/g,'e').replace(/Ə/g,'E')
+    .replace(/ş/g,'sh').replace(/Ş/g,'Sh')
+    .replace(/ğ/g,'gh').replace(/Ğ/g,'Gh')
+    .replace(/ı/g,'i').replace(/İ/g,'I')
+    .replace(/ö/g,'o').replace(/Ö/g,'O')
+    .replace(/ü/g,'u').replace(/Ü/g,'U')
+    .replace(/ç/g,'ch').replace(/Ç/g,'Ch')
+    .replace(/–/g,'-').replace(/—/g,'-')
+    .replace(/[^\x00-\x7F]/g,'?');
+}
+function downloadPDF() {
+  const rec = currentRec;
+  if (!rec) { showToast('Məlumat tapılmadı','error'); return; }
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,M=18,CW=W-M*2; let y=M;
+  doc.setFillColor(26,39,68); doc.roundedRect(M,y,CW,22,3,3,'F');
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('Pozitiv Psixologiya Merkezi',M+6,y+9);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(46,196,182);
+  doc.text('Diaqnostika Blanki',M+6,y+17); y+=28;
+  doc.setFillColor(248,245,240); doc.roundedRect(M,y,CW,30,3,3,'F');
+  doc.setDrawColor(216,210,200); doc.roundedRect(M,y,CW,30,3,3,'S');
+  const c1=M+5,c2=M+CW/2;
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(107,122,153);
+  doc.text('Ad Soyad',c1,y+7); doc.text('Yas',c2,y+7);
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(26,39,68);
+  doc.text(azFix(rec.name+' '+rec.surname),c1,y+14); doc.text((rec.age||'-')+' yas',c2,y+14);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(107,122,153);
+  doc.text('Mutexessis',c1,y+22); doc.text('Diaqnostika tarixi',c2,y+22);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(26,39,68);
+  doc.text(azFix(rec.expert||'-'),c1,y+29); doc.text(rec.date||'-',c2,y+29); y+=36;
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(26,39,68);
+  doc.text('Test Neticeleri',M,y); y+=5;
+  doc.setDrawColor(46,196,182); doc.setLineWidth(.5); doc.line(M,y,M+CW,y); y+=7;
+  TESTS.forEach((t,i)=>{
+    if(y>268){doc.addPage();y=M}
+    doc.setFillColor(237,233,226); doc.roundedRect(M,y,CW,8,1.5,1.5,'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,39,68);
+    doc.text(doc.splitTextToSize(azFix((i+1)+'. '+TESTS_DISPLAY[i]),CW-6),M+4,y+5.5); y+=10;
+    const val=(rec.results&&rec.results[t])||'';
+    if(val.trim()){
+      const lines=doc.splitTextToSize(azFix(val),CW-6);
+      const bh=lines.length*5+8;
+      if(y+bh>275){doc.addPage();y=M}
+      doc.setFillColor(255,255,255); doc.setDrawColor(216,210,200);
+      doc.roundedRect(M,y,CW,bh,1.5,1.5,'S');
+      doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(26,39,68);
+      doc.text(lines,M+4,y+6); y+=bh+5;
+    } else {
+      doc.setFontSize(8.5); doc.setFont('helvetica','italic'); doc.setTextColor(180,180,185);
+      doc.text('Neticə daxil edilmeyib',M+4,y+5); y+=12;
+    }
+  });
+  if(y>268){doc.addPage();y=M}
+  y+=4; doc.setDrawColor(216,210,200); doc.setLineWidth(.3); doc.line(M,y,M+CW,y); y+=5;
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(160,160,170);
+  doc.text('Bu sened Pozitiv Psixologiya Merkezinin diaqnostika sistemi terefinden yaradilmisdir.',M,y,{maxWidth:CW-30});
+  doc.text('ppctest.az',W-M,y,{align:'right'});
+  doc.save((rec.name+'_'+rec.surname+'_neticeler').replace(/\s+/g,'_')+'.pdf');
+  showToast('PDF yuklendi!','success');
+}
+
+// ── UTILS ──
+function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type+' show';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function showLoading(v){document.getElementById('loading').classList.toggle('hidden',!v)}
+function shake(el){el.style.animation='none';el.offsetHeight;el.style.animation='shake .4s ease'}
+document.getElementById('new-date').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
