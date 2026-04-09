@@ -221,7 +221,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <div class="form-row">
           <div class="form-group"><label>Adı</label><input type="text" id="new-name" placeholder="Ad"></div>
           <div class="form-group"><label>Soyadı</label><input type="text" id="new-surname" placeholder="Soyad"></div>
-          <div class="form-group"><label>Yaş</label><input type="number" id="new-age" placeholder="Yaş" min="1" max="18"></div>
+          <div class="form-group"><label>Yaş</label><input type="number" id="new-age" placeholder="Yaş" min="0" max="18"></div>
+          <div class="form-group"><label>Ay</label>
+            <select id="new-month" style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--text);background:var(--cream);outline:none;">
+              <option value="">— ay —</option>
+              <option value="0">0 ay</option>
+              <option value="1">1 ay</option>
+              <option value="2">2 ay</option>
+              <option value="3">3 ay</option>
+              <option value="4">4 ay</option>
+              <option value="5">5 ay</option>
+              <option value="6">6 ay</option>
+              <option value="7">7 ay</option>
+              <option value="8">8 ay</option>
+              <option value="9">9 ay</option>
+              <option value="10">10 ay</option>
+              <option value="11">11 ay</option>
+            </select>
+          </div>
           <div class="form-group"><label>Doğum tarixi</label><input type="date" id="new-dob"></div>
         </div>
         <div class="form-row">
@@ -450,6 +467,7 @@ async function createRecord() {
     await db.ref('records/' + id).set({
       id, pin, name, surname,
       age: document.getElementById('new-age').value || '',
+      month: document.getElementById('new-month').value || '',
       dob: document.getElementById('new-dob').value || '',
       expert: document.getElementById('new-expert').value.trim(),
       date: document.getElementById('new-date').value || new Date().toISOString().split('T')[0],
@@ -460,6 +478,7 @@ async function createRecord() {
     document.getElementById('code-result').style.display = 'block';
     showToast('Qeydiyyat yaradıldı! PIN: ' + pin, 'success');
     ['new-name','new-surname','new-age','new-dob','new-expert'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('new-month').value = '';
   } catch(e) { showToast('Xəta: ' + e.message, 'error'); }
   finally { showLoading(false); btn.disabled = false; }
 }
@@ -510,7 +529,7 @@ function renderRecords(recs) {
       <div class="acc-head" onclick="toggleAcc(this)">
         <div class="acc-col num">${idx+1}</div>
         <div class="acc-col name">${rec.name} ${rec.surname}</div>
-        <div class="acc-col age">${rec.age||'—'}</div>
+        <div class="acc-col age">${rec.age||'—'}${rec.month ? ' y '+rec.month+' ay' : ''}</div>
         <div class="acc-col date">${rec.date||'—'}</div>
         <div class="acc-col expert">${rec.expert||'—'}</div>
         <div class="acc-col pin"><div class="pin-badge"><span class="plabel">PIN&nbsp;</span>${rec.pin}</div></div>
@@ -574,7 +593,7 @@ async function deleteRecord(id) {
 function renderParentView(rec) {
   document.getElementById('p-name').textContent = rec.name + ' ' + rec.surname;
   document.getElementById('p-meta').textContent =
-    'Yaş: '+(rec.age||'—')+'  |  Diaqnostika tarixi: '+(rec.date||'—')+
+    'Yaş: '+(rec.age||'—')+(rec.month ? ' yaş '+rec.month+' ay' : ' yaş')+'  |  Diaqnostika tarixi: '+(rec.date||'—')+
     (rec.expert ? '  |  Mütəxəssis: '+rec.expert : '');
 
   const container = document.getElementById('parent-results');
@@ -630,7 +649,7 @@ function downloadPDF() {
         </div>
         <div style="flex:1">
           <div style="font-size:9px;color:#6b7a99;text-transform:uppercase;margin-bottom:3px">Yaş</div>
-          <div style="font-size:13px;font-weight:bold">${rec.age||'—'}</div>
+          <div style="font-size:13px;font-weight:bold">${rec.age||'—'}${rec.month ? ' yaş ' + rec.month + ' ay' : ' yaş'}</div>
         </div>
         <div style="flex:1">
           <div style="font-size:9px;color:#6b7a99;text-transform:uppercase;margin-bottom:3px">Mütəxəssis</div>
