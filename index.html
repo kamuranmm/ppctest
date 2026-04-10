@@ -551,7 +551,7 @@ function renderRecords(recs) {
           </thead>
           <tbody>
             ${TESTS.map((t,i) => `<tr>
-              <td class="tname">${i+1}. ${TESTS_DISPLAY[i]}</td>
+              <td class="tname">${TESTS_DISPLAY[i]}</td>
               <td><textarea id="ta-${rec.id}-${i}" rows="2" placeholder="Nəticəni daxil edin...">${esc(rec.results && rec.results[t] || '')}</textarea></td>
             </tr>`).join('')}
           </tbody>
@@ -666,7 +666,7 @@ function downloadPDF() {
       <div style="height:2px;background:#2ec4b6;margin-bottom:12px"></div>
       ${filledTests.map(({t,i,val}) => `
         <div style="margin-bottom:10px">
-          <div style="background:#ede9e2;padding:6px 10px;border-radius:4px;font-size:10px;font-weight:bold;color:#1a2744">${i+1}. ${TESTS_DISPLAY[i]}</div>
+          <div style="background:#ede9e2;padding:6px 10px;border-radius:4px;font-size:10px;font-weight:bold;color:#1a2744">${TESTS_DISPLAY[i]}</div>
           <div style="border:1px solid #d8d2c8;padding:8px 10px;border-radius:4px;margin-top:2px;font-size:10px;line-height:1.6;white-space:pre-wrap">${val}</div>
         </div>
       `).join('')}
