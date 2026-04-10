@@ -616,7 +616,6 @@ function renderParentView(rec) {
   container.innerHTML = filledTests.map(({t, i, val}) => `
     <div class="test-result-card">
       <div class="trh" onclick="toggleTest(this)">
-        <div class="test-num">${i+1}</div>
         <div class="test-title-p">${TESTS_DISPLAY[i]}</div>
         <span class="test-status filled">Daxil edilib</span>
         <span class="chevron-p">▼</span>
