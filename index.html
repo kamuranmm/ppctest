@@ -173,6 +173,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 </style>
 </head>
 <body>
+<script>
+var tapCount = 0;
+var tapTimer = null;
+function handleLogoTap() {
+  tapCount++;
+  clearTimeout(tapTimer);
+  if (tapCount >= 3) { tapCount = 0; showScreen('admin-login'); return; }
+  tapTimer = setTimeout(function(){ tapCount = 0; }, 800);
+}
+</script>
 
 <div class="loading-overlay hidden" id="loading"><div class="spinner"></div><p>Yüklənir...</p></div>
 
@@ -325,16 +335,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 //# sourceMappingURL=firebase-database.js.map
 </script>
 <script>
-// ── GIZLI ADMIN (logoya 3 defe) ──
-var tapCount = 0;
-var tapTimer = null;
-function handleLogoTap() {
-  tapCount++;
-  clearTimeout(tapTimer);
-  if (tapCount >= 3) { tapCount = 0; showScreen('admin-login'); return; }
-  tapTimer = setTimeout(function(){ tapCount = 0; }, 800);
-}
-
 firebase.initializeApp({
   apiKey: "AIzaSyBdbVMrgxGH9FHrILGcsLLQwtKcmZzKdcI",
   authDomain: "diaqnostika-testi.firebaseapp.com",
