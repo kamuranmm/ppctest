@@ -677,66 +677,118 @@ function downloadPDF() {
       </div>
     </div>`;
 
-  const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:white;padding:0;margin:0';
-  container.innerHTML = html;
-  document.body.appendChild(container);
-
+  // PDF - hər bloku ayrı render et, böyük blokları sətir-sətir böl
   showLoading(true);
-  import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js').then(() => {
-    html2canvas(container, {scale:2, useCORS:true, backgroundColor:'#ffffff'}).then(canvas => {
-      const {jsPDF} = window.jspdf;
-      const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-      const pageW = 210, pageH = 297;
-      const imgH = canvas.height * pageW / canvas.width;
-      let y = 0, remaining = imgH;
-      while (remaining > 0) {
-        const sliceH = Math.min(remaining, pageH);
-        const srcY = y * canvas.width / pageW;
-        const srcH = sliceH * canvas.width / pageW;
-        const sc = document.createElement('canvas');
-        sc.width = canvas.width; sc.height = srcH;
-        sc.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-        if (y > 0) doc.addPage();
-        doc.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',0,0,pageW,sliceH);
-        y += sliceH; remaining -= sliceH;
-      }
+
+  function doRender() {
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pageW = 210, pageH = 297, scale = 2;
+    const pxPerMm = 794 / 210;
+
+    function renderEl(el) {
+      return html2canvas(el, {scale, useCORS:true, backgroundColor:'#ffffff', logging:false});
+    }
+
+    // Build elements array
+    const headerEl = document.createElement('div');
+    headerEl.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:white;font-family:Arial,sans-serif;padding:20px 24px 0;box-sizing:border-box';
+    headerEl.innerHTML = `
+      <div style="background:#1a2744;padding:14px 16px;border-radius:6px;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:bold;color:white">Pozitiv Psixologiya Mərkəzi</div>
+        <div style="font-size:10px;color:#2ec4b6;margin-top:3px">Diaqnostika Blanki</div>
+      </div>
+      <div style="background:#f8f5f0;border:1px solid #d8d2c8;border-radius:6px;padding:12px 16px;margin-bottom:16px;display:flex;gap:20px">
+        <div style="flex:1"><div style="font-size:9px;color:#6b7a99;text-transform:uppercase;margin-bottom:3px">Ad Soyad</div><div style="font-size:13px;font-weight:bold">${rec.name} ${rec.surname}</div></div>
+        <div style="flex:1"><div style="font-size:9px;color:#6b7a99;text-transform:uppercase;margin-bottom:3px">Yaş</div><div style="font-size:13px;font-weight:bold">${rec.age||'—'}${rec.month ? ' yaş ' + rec.month + ' ay' : ' yaş'}</div></div>
+        <div style="flex:1"><div style="font-size:9px;color:#6b7a99;text-transform:uppercase;margin-bottom:3px">Mütəxəssis</div><div style="font-size:11px">${rec.expert||'—'}</div></div>
+        <div style="flex:1"><div style="font-size:9px;color:#6b7a99;text-transform:uppercase;margin-bottom:3px">Tarix</div><div style="font-size:11px">${rec.date||'—'}</div></div>
+      </div>
+      <div style="font-size:13px;font-weight:bold;margin-bottom:6px;color:#1a2744">Test Nəticələri</div>
+      <div style="height:2px;background:#2ec4b6;margin-bottom:12px"></div>`;
+    document.body.appendChild(headerEl);
+
+    const blockEls = filledTests.map(({t,i,val}) => {
+      const el = document.createElement('div');
+      el.style.cssText = 'position:fixed;left:-9999px;top:0;width:754px;background:white;font-family:Arial,sans-serif;padding:0 20px;box-sizing:border-box';
+      el.innerHTML = `<div style="margin-bottom:8px">
+        <div style="background:#ede9e2;padding:6px 10px;border-radius:4px;font-size:10px;font-weight:bold;color:#1a2744">${TESTS_DISPLAY[i]}</div>
+        <div style="border:1px solid #d8d2c8;padding:8px 10px;border-radius:4px;margin-top:2px;font-size:10px;line-height:1.6;white-space:pre-wrap">${val}</div>
+      </div>`;
+      document.body.appendChild(el);
+      return el;
+    });
+
+    const stampEl = document.createElement('div');
+    stampEl.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:white;font-family:Arial,sans-serif;padding:10px 24px 20px;box-sizing:border-box';
+    stampEl.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px">
+      <div style="font-size:8px;color:#aaa;max-width:110mm">Bu sənəd Pozitiv Psixologiya Mərkəzinin diaqnostika sistemi tərəfindən yaradılmışdır. ppctest.az</div>
+      <img src="${STAMP_B64}" style="width:45mm;height:45mm;object-fit:contain" crossorigin="anonymous"/>
+    </div>`;
+    document.body.appendChild(stampEl);
+
+    const allEls = [headerEl, ...blockEls, stampEl];
+
+    Promise.all(allEls.map(renderEl)).then(canvases => {
+      let curY = 0;
+
+      canvases.forEach((canvas, idx) => {
+        const mmH = canvas.height / scale / pxPerMm;
+        const mmW = pageW;
+
+        // If block is larger than a full page, split it by rows
+        if (mmH > pageH - curY && mmH > pageH * 0.6) {
+          // Large block - split into page-sized chunks
+          const totalH = canvas.height;
+          let srcY = 0;
+          let firstChunk = true;
+          while (srcY < totalH) {
+            const availMm = firstChunk ? (pageH - curY) : pageH;
+            const availPx = availMm * pxPerMm * scale;
+            const chunkPx = Math.min(availPx, totalH - srcY);
+            const chunkMm = chunkPx / scale / pxPerMm;
+            const sc = document.createElement('canvas');
+            sc.width = canvas.width;
+            sc.height = Math.ceil(chunkPx);
+            sc.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sc.height, 0, 0, canvas.width, sc.height);
+            if (!firstChunk) { doc.addPage(); curY = 0; }
+            else if (curY > 0 && curY + chunkMm > pageH) { doc.addPage(); curY = 0; }
+            doc.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',0,curY,mmW,chunkMm);
+            curY += chunkMm;
+            srcY += sc.height;
+            firstChunk = false;
+          }
+        } else {
+          // Normal block - check if fits, else new page
+          if (curY > 0 && curY + mmH > pageH - 5) {
+            doc.addPage();
+            curY = 0;
+          }
+          doc.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',0,curY,mmW,mmH);
+          curY += mmH;
+        }
+      });
+
+      allEls.forEach(el => { try { document.body.removeChild(el); } catch(x){} });
       doc.save((rec.name+'_'+rec.surname+'_neticeler').replace(/\s+/g,'_')+'.pdf');
-      document.body.removeChild(container);
       showLoading(false);
       showToast('PDF yükləndi!','success');
-    }).catch(e => { showLoading(false); showToast('Xəta: '+e.message,'error'); document.body.removeChild(container); });
-  }).catch(() => {
-    // fallback: load html2canvas via script tag
+    }).catch(e => {
+      allEls.forEach(el => { try { document.body.removeChild(el); } catch(x){} });
+      showLoading(false);
+      showToast('Xəta: '+e.message,'error');
+    });
+  }
+
+  if (typeof html2canvas !== 'undefined') {
+    doRender();
+  } else {
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    s.onload = () => {
-      html2canvas(container, {scale:2, useCORS:true, backgroundColor:'#ffffff'}).then(canvas => {
-        const {jsPDF} = window.jspdf;
-        const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-        const pageW = 210, pageH = 297;
-        const imgH = canvas.height * pageW / canvas.width;
-        let y = 0, remaining = imgH;
-        while (remaining > 0) {
-          const sliceH = Math.min(remaining, pageH);
-          const srcY = y * canvas.width / pageW;
-          const srcH = sliceH * canvas.width / pageW;
-          const sc = document.createElement('canvas');
-          sc.width = canvas.width; sc.height = srcH;
-          sc.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-          if (y > 0) doc.addPage();
-          doc.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',0,0,pageW,sliceH);
-          y += sliceH; remaining -= sliceH;
-        }
-        doc.save((rec.name+'_'+rec.surname+'_neticeler').replace(/\s+/g,'_')+'.pdf');
-        document.body.removeChild(container);
-        showLoading(false);
-        showToast('PDF yükləndi!','success');
-      });
-    };
+    s.onload = doRender;
+    s.onerror = () => { showLoading(false); showToast('html2canvas yüklənmədi','error'); };
     document.head.appendChild(s);
-  });
-}
+  }
 
 // ── UTILS ──
 function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
