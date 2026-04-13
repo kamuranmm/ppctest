@@ -687,9 +687,20 @@ function downloadPDF() {
     html2canvas(container, {scale:2, useCORS:true, backgroundColor:'#ffffff'}).then(canvas => {
       const {jsPDF} = window.jspdf;
       const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const W = 210, H = canvas.height * 210 / canvas.width;
-      doc.addImage(imgData,'JPEG',0,0,W,H);
+      const pageW = 210, pageH = 297;
+      const imgH = canvas.height * pageW / canvas.width;
+      let y = 0, remaining = imgH;
+      while (remaining > 0) {
+        const sliceH = Math.min(remaining, pageH);
+        const srcY = y * canvas.width / pageW;
+        const srcH = sliceH * canvas.width / pageW;
+        const sc = document.createElement('canvas');
+        sc.width = canvas.width; sc.height = srcH;
+        sc.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        if (y > 0) doc.addPage();
+        doc.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',0,0,pageW,sliceH);
+        y += sliceH; remaining -= sliceH;
+      }
       doc.save((rec.name+'_'+rec.surname+'_neticeler').replace(/\s+/g,'_')+'.pdf');
       document.body.removeChild(container);
       showLoading(false);
@@ -703,9 +714,20 @@ function downloadPDF() {
       html2canvas(container, {scale:2, useCORS:true, backgroundColor:'#ffffff'}).then(canvas => {
         const {jsPDF} = window.jspdf;
         const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        const W = 210, H = Math.min(297, canvas.height * 210 / canvas.width);
-        doc.addImage(imgData,'JPEG',0,0,W,H);
+        const pageW = 210, pageH = 297;
+        const imgH = canvas.height * pageW / canvas.width;
+        let y = 0, remaining = imgH;
+        while (remaining > 0) {
+          const sliceH = Math.min(remaining, pageH);
+          const srcY = y * canvas.width / pageW;
+          const srcH = sliceH * canvas.width / pageW;
+          const sc = document.createElement('canvas');
+          sc.width = canvas.width; sc.height = srcH;
+          sc.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+          if (y > 0) doc.addPage();
+          doc.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',0,0,pageW,sliceH);
+          y += sliceH; remaining -= sliceH;
+        }
         doc.save((rec.name+'_'+rec.surname+'_neticeler').replace(/\s+/g,'_')+'.pdf');
         document.body.removeChild(container);
         showLoading(false);
